@@ -1,0 +1,153 @@
+h1. jQuery Offline Plugin
+
+Web applications that wish to work robustly in flaky or offline scenarios can use client-side persistence to serve stale data while transparently trying to reconnect for more up-to-date data if possible.
+
+In a mobile scenario, the user may consider himself "connected" when in fact he has dropped out of connectivity for a moment (for instance, he may have gone under a tunnel). Because of this, and because latency on mobile devices can be quite high, a well-behaved mobile web application (or even simple website) will serve up content out of a local cache, so the user can see it quickly, before trying to make a connection to retrieve new content.
+
+This completely eliminates the fear of pressing the back button on mobile devices, since the user will be able to see the "index" page on a content site, for instance, even if their connection has temporarily dropped.
+
+The jQuery offline plugin provides an easy mechanism for retrieving JSON data from a remote server, and then caching it. Subsequent requests for the same URL will retrieve the data from the cache, rather than the remote server.
+
+If the user is online, the plugin will transparently request new content from the remote server, firing the callback again if the content has changed. If the user is offline, the plugin will request the data from the remote server for the most recent request when the user comes back online. You can explicitly silence the callback if you wish if the user moves away from the part of the application where it would be useful without entering an area of the page using cached data.
+
+jQuery Offline uses the HTML5 "@localStorage@ API":http://dev.w3.org/html5/webstorage/ for persistence. You can use the same API for browsers that do not support @localStorage@, jQuery Offline will simply fall back to making a request to the server each time. As a result @jQuery.retrieveJSON@ is a portable way to make a request for JSON that should be cached if possible.
+
+For more information on the basic strategy used here and the rationale for it, check out "Rack::Offline":http://github.com/wycats/rack-offline/blob/master/README.textile, starting from "Application Cache".
+
+h1. Recommended With
+
+jQuery Offline can be used standalone with jQuery 1.4.2 and above. However, it is best used in conjunction with "Rack::Offline":http://github.com/wycats/rack-offline and "jquery-templ":http://github.com/jquery/jquery-tmpl.
+
+@Rack::Offline@ automates the process of generating a cache manifest, and @jquery-templ@ automates the process of taking a JavaScript object retrieved via @jQuery.retrieveJSON@ and making HTML out of it.
+
+h1. Usage
+
+jQuery Offline provides two methods:
+
+h2. @jQuery.retrieveJSON@
+
+<pre lang="ruby">
+jQuery.retrieveJSON("/url", {data: "toSend"}, function(json, status, followUp) {
+  // json will be the same whether or not the cache was hit
+  // status will be either "success" or "cached"
+})
+</pre>
+
+@jQuery.retrieveJSON@ has the *same* API as @jQuery.getJSON@ with one exception: if the data is available in the cache, the callback will be called twice. First, it will be called with the object retrieved from the cache with the status "cached". Next, once the JSON request succeeds, it will be called with the object returned from the Ajax request with the status "success".
+
+If the Ajax request was made after a successful hit from the cache, jQuery Offline will make the third parameter to the function **true**. You might use this third parameter to alert the user that a change is about to happen, if such a change would be particularly jarring. Note that the value of this third parameter may change in a future release to provide additional information; a future-proof check would be: <code>if( status == "success" && followUp )</code>.
+
+Additionally, @jQuery.retrieveJSON@ will not make a request if a request is in-process for a particular URL/query-string combination.
+
+h2. @jQuery.clearJSON@
+
+@jQuery.clearJSON@ takes the same first two parameters as @jQuery.retrieveJSON@ and clears the associated key. You can use this function to forcibly purge the cache for a particular URL and set of data. In general, you should not have to do this, as jQuery Offline will always make a follow-up request for content from the server if possible.
+
+h1. Suggested Strategy for Offline Apps
+
+You should use jQuery Offline in combination with an HTML5 cache manifest and @jquery-tmpl@ for the best effect. An example follows.
+
+First, the HTML:
+
+<pre lang="html">
+<html manifest="application.manifest">
+  <head>
+    <link rel="stylesheet" href="/stylesheets/application.css" />
+    <script src="/javascripts/jquery.js"></script>
+    <script src="/javascripts/template.jquery.js"></script>
+    <script src="/javascripts/offline.jquery.js"></script>
+    <script id="articleTemplate" type="text/html">
+      {{each(article) articles}}
+      <article>
+        <header>
+          <h1>${article.title}</h1>
+          <h2>By ${article.byline}</h2>
+        </header>
+        ${article.body}
+      </article>
+      {{/each}}
+    </script>
+  </head>
+  <body>
+    <div id="loading"><img src="loading.png" /></div>
+    <header>
+      <img src="masthead.png" />
+      <nav><ul>
+        <li>Main List</li>
+        <li>Recommended</li>
+      </ul></nav>
+    </header>
+    <div id="articles">
+    </div>
+    <footer>
+      Copyright Me, Inc.
+    </footer>
+  </body>
+</html>
+</pre>
+
+And the JavaScript using jquery-tmpl and jQuery Offline:
+
+<pre lang="javascript">
+jQuery(document).ready(function($) {
+  // Since jQuery.retrieveJSON delegates to jQuery's Ajax
+  // to make requests, we can just set up normal jQuery
+  // Ajax listeners.
+  $("#loading").ajaxStart(function() { $(this).show(); });
+  $("#loading").ajaxStop(function() {  $(this).hide(); });
+
+  var updateArticles = function(callback) {
+    $.retrieveJSON("/article_list.json", function(json, status) {
+      var content = $("#articleTemplate").render( json );
+      $("#articles").empty().append(content);
+
+      // If this *isn't* a cache hit, but rather a
+      // successful Ajax request, queue an update task
+      // for five minutes from now.
+      if( status == "success" ) { setTimeout( callback, 300000 ); }
+    });
+  };
+
+  // In five minutes, kick off a background request for
+  // more data. If the user is online, it will be processed
+  // immediately. If the user is not, it will queue the
+  // request for when the user comes online
+  setTimeout(function periodicUpdater() {
+    // Pass in this function as the callback to updateArticles
+    updateArticles(periodicUpdater);
+  }, 300000)
+
+  // Immediately try to retrieve the data. If the cached
+  // data is available, it will be used.
+  //
+  // If the user is online, it will kick off a request for
+  // updated content in the background. If not, it will
+  // queue the request for later.
+  updateArticles();
+});
+</pre>
+
+Because of the architecture of jQuery Offline, you can call $.retrieveJSON whether or not the user is online, and the plugin will either make an immediate request or kick off a request when the user comes back online. This also means you can kick off a timer for a request for new content in the callback to @jQuery.retrieveJSON@. If the user is online, it'll get new content every N minutes, like clockwork. If the user is offline, jQuery Offline will simply wait until the user comes back online to make the request.
+
+The above JavaScript is roughly equivalent to the JavaScript strategy I used in "Rack::Offline":http://github.com/wycats/rack-offline, but most of the dirty work is handled for you.
+
+h1. Tests
+
+jQuery Offline has a test suite that tests functionality in browsers with @localStorage@ and browsers without @localStorage@. To run the tests, you will need Ruby on your system. Then, follow these instructions in a checked out copy of this app:
+
+<pre>
+$ gem install bundler
+$ bundle install
+$ bundle exec rackup &
+$ open http://localhost:9292/index.html # to run the localStorage-enabled tests
+$ open http://localhost:9292/index-fallback.html # to run the localStorage-disabled tests
+</pre>
+
+jQuery Offline also passes JSLint.
+
+h1. TODO
+
+* Remember the time that the original content was cached; then provide it to
+  follow-up calls
+* Provide better fallback for browsers without localStorage
+* Provide more integrated support for jquery-templ?
