@@ -39,6 +39,10 @@ jQuery(document).ready(function($) {
         cached = text;
         deepEqual( json, { count: count, qs: $.param(data || {}) },
           "retrieveJSON with '" + $.param( data ) + "' should get JSON" );
+
+        if(obj.returnValue === false) { setTimeout(function() { start() }, 100); }
+
+        return obj.returnValue;
       }
     });
   }
@@ -61,7 +65,21 @@ jQuery(document).ready(function($) {
         baseTest(next, {}, { start: true, cached: true });
       });
     });
-  
+
+    asyncTest("if you return false, it doesn't make an Ajax request", function() {
+      // Use an expectation assertion here to confirm that the Ajax request
+      // doesn't run. If it did, we would have two more assertions.
+      expect(2);
+
+      $(document).dequeue().queue(function(next) {
+        setup(next);
+      }).queue(function(next) {
+        baseTest(next, {}, { cached: false });
+      }).queue(function(next) {
+        baseTest(next, {}, { start: true, cached: true, returnValue: false });
+      });
+    });
+
     asyncTest("different data gets cached differently", function() {
       $(document).dequeue().queue(function(next) {
         setup(next);
@@ -75,7 +93,7 @@ jQuery(document).ready(function($) {
         baseTest(next, {goodbye: "world"}, { cached: true, start: true });
       });
     });
-  
+
     asyncTest("clearJSON clears the JSON cache for an URL", function() {
       $(document).dequeue().queue(function(next) {
         setup(next);
@@ -88,7 +106,7 @@ jQuery(document).ready(function($) {
         baseTest(next, {}, { start: true, count: 2 });
       });
     });
-  
+
     asyncTest("clearJSON clears the JSON cache for an URL and data", function() {
       $(document).dequeue().queue(function(next) {
         setup(next);
@@ -112,7 +130,7 @@ jQuery(document).ready(function($) {
         baseTest(next, {}, true);
       });
     });
-  
+
     asyncTest("the second time, it still hits the server", function() {
       $(document).dequeue().queue(function(next) {
         setup(next);
@@ -122,7 +140,7 @@ jQuery(document).ready(function($) {
         baseTest(next, {}, { start: true, count: 2 })
       });
     });
-  
+
     asyncTest("different query strings always hit the server", function() {
       $(document).dequeue().queue(function(next) {
         setup(next);
@@ -136,7 +154,7 @@ jQuery(document).ready(function($) {
         baseTest(next, {goodbye: "world"}, { start: true, count: 2 });
       });
     });
-  
+
     asyncTest("clearJSON clears the JSON cache for an URL", function() {
       $(document).dequeue().queue(function(next) {
         setup(next);
@@ -149,7 +167,7 @@ jQuery(document).ready(function($) {
         baseTest(next, {}, { start: true, count: 2 });
       });
     });
-  
+
     asyncTest("clearJSON clears the JSON cache for an URL and data", function() {
       $(document).dequeue().queue(function(next) {
         setup(next);

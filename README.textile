@@ -39,6 +39,8 @@ jQuery.retrieveJSON("/url", {data: "toSend"}, function(json, status, followUp) {
 
 @jQuery.retrieveJSON@ has the *same* API as @jQuery.getJSON@ with one exception: if the data is available in the cache, the callback will be called twice. First, it will be called with the object retrieved from the cache with the status "cached". Next, once the JSON request succeeds, it will be called with the object returned from the Ajax request with the status "success".
 
+Returning false from the callback when the status is @cached@ will cause jQuery Offline to skip the Ajax request. You can use this if you don't want to refresh the content if there is local content available.
+
 If the Ajax request was made after a successful hit from the cache, jQuery Offline will make the third parameter to the function **true**. You might use this third parameter to alert the user that a change is about to happen, if such a change would be particularly jarring. Note that the value of this third parameter may change in a future release to provide additional information; a future-proof check would be: <code>if( status == "success" && followUp )</code>.
 
 Additionally, @jQuery.retrieveJSON@ will not make a request if a request is in-process for a particular URL/query-string combination.
@@ -155,3 +157,5 @@ h1. TODO
   follow-up calls
 * Provide better fallback for browsers without localStorage
 * Provide more integrated support for jquery-templ?
+* Deal with error messages because the cache is full
+* LRU + preferred key algorithm
