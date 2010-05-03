@@ -159,3 +159,4 @@ h1. TODO
 * Provide more integrated support for jquery-templ?
 * Deal with error messages because the cache is full
 * LRU + preferred key algorithm
+* Add TTL to the caching mechanism (each key or global?)
