@@ -61,7 +61,7 @@ First, the HTML:
     <link rel="stylesheet" href="/stylesheets/application.css" />
     <script src="/javascripts/jquery.js"></script>
     <script src="/javascripts/template.jquery.js"></script>
-    <script src="/javascripts/offline.jquery.js"></script>
+    <script src="/javascripts/jquery.offline.js"></script>
     <script id="articleTemplate" type="text/html">
       {{each(article) articles}}
       <article>
