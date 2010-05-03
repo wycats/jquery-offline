@@ -8,7 +8,7 @@ This completely eliminates the fear of pressing the back button on mobile device
 
 The jQuery offline plugin provides an easy mechanism for retrieving JSON data from a remote server, and then caching it. Subsequent requests for the same URL will retrieve the data from the cache, rather than the remote server.
 
-If the user is online, the plugin will transparently request new content from the remote server, firing the callback again if the content has changed. If the user is offline, the plugin will request the data from the remote server for the most recent request when the user comes back online. You can explicitly silence the callback if you wish if the user moves away from the part of the application where it would be useful without entering an area of the page using cached data.
+If the user is online, the plugin will transparently request new content from the remote server, firing the callback again if the content has changed. If the user is offline, the plugin will request the data from the remote server for the most recent request when the user comes back online.
 
 jQuery Offline uses the HTML5 "@localStorage@ API":http://dev.w3.org/html5/webstorage/ for persistence. You can use the same API for browsers that do not support @localStorage@, jQuery Offline will simply fall back to making a request to the server each time. As a result @jQuery.retrieveJSON@ is a portable way to make a request for JSON that should be cached if possible.
 
@@ -21,6 +21,8 @@ jQuery Offline can be used standalone with jQuery 1.4.2 and above. However, it i
 @Rack::Offline@ automates the process of generating a cache manifest, and @jquery-templ@ automates the process of taking a JavaScript object retrieved via @jQuery.retrieveJSON@ and making HTML out of it.
 
 h1. Usage
+
+You can find jQuery Offline in the @lib@ directory of this repository.
 
 jQuery Offline provides two methods:
 
