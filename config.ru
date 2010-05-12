@@ -28,6 +28,12 @@ use Rack::Static, :urls => ["/"], :root => "public"
 
 current = Hash.new(0)
 
+map "/favicon.ico" do
+  run proc {
+    [200, {"Content-Type" => "image/png"}, [""]]
+  }
+end
+
 map "/reset" do
   run proc {
     current = Hash.new(0)
