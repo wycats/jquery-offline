@@ -31,7 +31,7 @@ jQuery Offline provides two methods:
 h2. @jQuery.retrieveJSON@
 
 <pre lang="ruby">
-jQuery.retrieveJSON("/url", {data: "toSend"}, function(json, status, followUp) {
+jQuery.retrieveJSON("/url", {data: "toSend"}, function(json, status, data) {
   // json will be the same whether or not the cache was hit
   // status will be either "success" or "cached"
 })
@@ -41,9 +41,13 @@ jQuery.retrieveJSON("/url", {data: "toSend"}, function(json, status, followUp) {
 
 Returning false from the callback when the status is @cached@ will cause jQuery Offline to skip the Ajax request. You can use this if you don't want to refresh the content if there is local content available.
 
-If the Ajax request was made after a successful hit from the cache, jQuery Offline will make the third parameter to the function **true**. You might use this third parameter to alert the user that a change is about to happen, if such a change would be particularly jarring. Note that the value of this third parameter may change in a future release to provide additional information; a future-proof check would be: <code>if( status == "success" && followUp )</code>.
+If the contents come from the cache, the third parameter will be an object containing the time that jQuery Offline originally cached the content: <code>{ time: originalTime }</code>.
 
-Additionally, @jQuery.retrieveJSON@ will not make a request if a request is in-process for a particular URL/query-string combination.
+If the Ajax request was made after a successful hit from the cache, jQuery Offline will make the third parameter to the function <code>{ time: originalTime, cacheTime: timeRetrieved }</code>. The @originalTime@ is the original time that the item was put into the cache. The @timeRetrieved@ is the time that the data was originally retrieved from the cache (in this session). You might use this third parameter to alert the user that a change is about to happen, if such a change would be particularly jarring. 
+
+Note that this third parameter is also supplied for a cache hit; if you want to determine whether a particular response is a follow-up to a cache hit, use: <code>if( status == "success" && data )</code>.
+
+Additionally, @jQuery.retrieveJSON@ will not make a new request if a request is in-process for a particular URL/query-string combination.
 
 h2. @jQuery.clearJSON@
 
@@ -153,8 +157,8 @@ jQuery Offline also passes JSLint.
 
 h1. TODO
 
-* Remember the time that the original content was cached; then provide it to
-  follow-up calls
+* <s>Remember the time that the original content was cached; then provide it to
+  follow-up calls</s>
 * Provide better fallback for browsers without localStorage
 * Provide more integrated support for jquery-templ?
 * Deal with error messages because the cache is full

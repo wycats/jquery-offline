@@ -20,8 +20,12 @@ var baseTest = function( next, data, obj ) {
 
   var successCount = expectCached ? (count + 1) : count;
 
-  $.retrieveJSON("/ajax/app", data, function( json, text ) {
+  $.retrieveJSON("/ajax/app", data, function( json, text, flag ) {
     if(text == "success") {
+      if(obj.successFlag) {
+        ok( flag && flag.time, "a follow-up request should have a flag" )
+      }
+
       var countSucc = (count || 1) + 1;
       deepEqual( json, { count: successCount, qs: $.param(data || {}) },
         "retrieveJSON with '" + $.param( data ) + "' should get JSON" );
@@ -34,6 +38,10 @@ var baseTest = function( next, data, obj ) {
       if(toStart) start();
       else next();
     } else if(text == "cached") {
+      if(obj.cachedFlag) {
+        ok( flag && flag.time, "a cache hit should have a flag" )
+      }
+      
       cached = text;
       deepEqual( json, { count: count, qs: $.param(data || {}) },
         "retrieveJSON with '" + $.param( data ) + "' should get JSON" );
@@ -51,6 +59,16 @@ if( $.support.localStorage ) {
       setup(next);
     }).queue(function(next) {
       baseTest(next, {}, { start: true, cached: false });
+    });
+  });
+
+  asyncTest("the second time, it gets a flag back", function() {
+    $(document).dequeue().queue(function(next) {
+      setup(next);
+    }).queue(function(next) {
+      baseTest(next, {}, { cached: false });
+    }).queue(function(next) {
+      baseTest(next, {}, { start: true, cached: true, successFlag: true, cachedFlag: true })
     });
   });
 
