@@ -23,7 +23,8 @@ var baseTest = function( next, data, obj ) {
   $.retrieveJSON("/ajax/app", data, function( json, text, flag ) {
     if(text == "success") {
       if(obj.successFlag) {
-        ok( flag && flag.time, "a follow-up request should have a flag" )
+        ok( flag && flag.cachedAt, "a follow-up request should have the cache time" );
+        ok( flag && flag.retrievedAt, "a follow-up request should have the retrieve time" );
       }
 
       var countSucc = (count || 1) + 1;
@@ -39,7 +40,7 @@ var baseTest = function( next, data, obj ) {
       else next();
     } else if(text == "cached") {
       if(obj.cachedFlag) {
-        ok( flag && flag.time, "a cache hit should have a flag" )
+        ok( flag && flag.cachedAt, "a cache hit should have the cache time" )
       }
       
       cached = text;
@@ -62,7 +63,7 @@ if( $.support.localStorage ) {
     });
   });
 
-  asyncTest("the second time, it gets a flag back", function() {
+  asyncTest("the second time, it gets additional data in the callback", function() {
     $(document).dequeue().queue(function(next) {
       setup(next);
     }).queue(function(next) {
