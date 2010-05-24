@@ -157,8 +157,7 @@ jQuery Offline also passes JSLint.
 
 h1. TODO
 
-* <s>Remember the time that the original content was cached; then provide it to
-  follow-up calls</s>
+* -Remember the time that the original content was cached; then provide it to follow-up calls-
 * Provide better fallback for browsers without localStorage
 * Provide more integrated support for jquery-templ?
 * Deal with error messages because the cache is full
