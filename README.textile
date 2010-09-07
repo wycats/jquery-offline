@@ -16,7 +16,7 @@ For more information on the basic strategy used here and the rationale for it, c
 
 h1. Recommended With
 
-jQuery Offline can be used standalone with jQuery 1.4.2 and above. However, it is best used in conjunction with "Rack::Offline":http://github.com/wycats/rack-offline and "jquery-templ":http://github.com/jquery/jquery-tmpl.
+jQuery Offline can be used standalone with jQuery 1.4.2 and above. However, it is best used in conjunction with "Rack::Offline":http://github.com/wycats/rack-offline and "jquery-tmpl":http://github.com/jquery/jquery-tmpl.
 
 @Rack::Offline@ automates the process of generating a cache manifest, and @jquery-templ@ automates the process of taking a JavaScript object retrieved via @jQuery.retrieveJSON@ and making HTML out of it.
 
