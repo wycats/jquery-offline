@@ -19,8 +19,8 @@ var baseTest = function( next, data, obj ) {
       expectCached = obj.cached;
 
   var successCount = expectCached ? (count + 1) : count;
-
-  $.retrieveJSON("/ajax/app", data, function( json, text, flag ) {
+  
+  var returned = $.retrieveJSON("/ajax/app", data, function( json, text, flag ) {
     if(text == "success") {
       if(obj.successFlag) {
         ok( flag && flag.cachedAt, "a follow-up request should have the cache time" );
@@ -52,6 +52,12 @@ var baseTest = function( next, data, obj ) {
       return obj.returnValue;
     }
   });
+  if(obj.returnsJQXHR) { 
+    ok( returned.readyState > 0, 'retrieveJSON should return jqXHR' ); 
+  }
+  if(obj.returnsPromise) {
+    ok( returned.fail && returned.done, 'retrieveJSON should return a jQuery promise' ); 
+  }
 }
 
 if( $.support.localStorage ) {
@@ -60,6 +66,14 @@ if( $.support.localStorage ) {
       setup(next);
     }).queue(function(next) {
       baseTest(next, {}, { start: true, cached: false });
+    });
+  });
+
+  asyncTest("the first time, it returns a jqXHR object from the AJAX call", function() {
+    $(document).dequeue().queue(function(next) {
+      setup(next);
+    }).queue(function(next) {
+      baseTest(next, {}, { start: true, cached: false, returnsJQXHR: true });
     });
   });
 
@@ -94,6 +108,20 @@ if( $.support.localStorage ) {
       baseTest(next, {}, { cached: false });
     }).queue(function(next) {
       baseTest(next, {}, { start: true, cached: true, returnValue: false });
+    });
+  });
+  
+  asyncTest("if you return false, it will return a jQuery.Defered().promise object", function() {
+    // Use an expectation assertion here to confirm that the Ajax request
+    // doesn't run. If it did, we would have two more assertions.
+    expect(3);
+
+    $(document).dequeue().queue(function(next) {
+      setup(next);
+    }).queue(function(next) {
+      baseTest(next, {}, { cached: false });
+    }).queue(function(next) {
+      baseTest(next, {}, { start: true, cached: true, returnValue: false, returnsPromise: true });
     });
   });
 
