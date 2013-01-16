@@ -16,9 +16,9 @@ For more information on the basic strategy used here and the rationale for it, c
 
 h1. Recommended With
 
-jQuery Offline can be used standalone with jQuery 1.4.2 and above. However, it is best used in conjunction with "Rack::Offline":http://github.com/wycats/rack-offline and "jquery-templ":http://github.com/jquery/jquery-tmpl.
+jQuery Offline can be used standalone with jQuery 1.4.2 and above. However, it is best used in conjunction with "Rack::Offline":http://github.com/wycats/rack-offline and "jquery-tmpl":http://github.com/jquery/jquery-tmpl.
 
-@Rack::Offline@ automates the process of generating a cache manifest, and @jquery-templ@ automates the process of taking a JavaScript object retrieved via @jQuery.retrieveJSON@ and making HTML out of it.
+@Rack::Offline@ automates the process of generating a cache manifest, and @jquery-tmpl@ automates the process of taking a JavaScript object retrieved via @jQuery.retrieveJSON@ and making HTML out of it.
 
 Note that neither iPhone OS 3.1 and earlier nor jQuery have native JSON serialization tools. You can grab @json.js@ from the @lib@ directory of this repository. It's a small library, and it will not override the native serialization and deserialization if they exist (such as on recent versions of Firefox, Safari, and iPhone OS 3.2 and later).
 
